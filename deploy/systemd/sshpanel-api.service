@@ -1,0 +1,40 @@
+[Unit]
+Description=SSH Manager Panel API + WebSocket/TLS bridge
+After=network-online.target postgresql.service
+Wants=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+# Runs as a dedicated, unprivileged account. Every operation that needs
+# root (creating/deleting Linux users, issuing certificates) goes through
+# sshpanel-helper via the narrow sudoers rule in deploy/sudoers.d/sshpanel -
+# this process itself never runs as root.
+User=sshpanel-api
+Group=sshpanel-api
+WorkingDirectory=/opt/sshpanel
+EnvironmentFile=/etc/sshpanel/sshpanel.env
+ExecStart=/opt/sshpanel/bin/server
+Restart=on-failure
+RestartSec=2
+
+# --- sandboxing: the process only needs its own binary, its env file, the
+# Postgres socket/TCP port, the published cert directory, and sudo. Nothing
+# else on the filesystem is relevant to it. ---
+NoNewPrivileges=false        # must stay false - this process calls `sudo` by design
+ProtectSystem=strict
+ReadOnlyPaths=/opt/sshpanel
+ReadOnlyPaths=/etc/sshpanel
+ProtectHome=true
+PrivateTmp=true
+RestrictSUIDSGID=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+RestrictRealtime=true
+
+[Install]
+WantedBy=multi-user.target

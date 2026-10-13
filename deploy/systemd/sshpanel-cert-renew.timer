@@ -1,0 +1,13 @@
+[Unit]
+Description=Daily SSH Manager Panel certificate renewal check
+
+[Timer]
+# certbot itself only actually renews a certificate inside its ~30-day
+# renewal window, so running this daily is the standard, safe default - it
+# does not re-issue a fresh certificate every day.
+OnCalendar=daily
+RandomizedDelaySec=1h
+Persistent=true
+
+[Install]
+WantedBy=timers.target

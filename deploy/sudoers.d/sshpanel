@@ -1,0 +1,12 @@
+# Allow the unprivileged sshpanel-api service account to run ONLY the
+# sshpanel-helper binary, as root, without a password, and nothing else.
+# Install with: sudo install -m 0440 sshpanel /etc/sudoers.d/sshpanel
+# Then validate with: sudo visudo -c
+#
+# Replace `sshpanel-api` if you used a different service user name.
+sshpanel-api ALL=(root) NOPASSWD: /usr/local/bin/sshpanel-helper *
+
+# Defense in depth: strip the environment sudo passes through, and refuse to
+# run via a shell alias/wrapper.
+Defaults!/usr/local/bin/sshpanel-helper !env_reset
+Defaults:sshpanel-api env_reset, secure_path="/usr/sbin:/usr/bin:/sbin:/bin"

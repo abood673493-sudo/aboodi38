@@ -1,0 +1,15 @@
+[Unit]
+Description=Renew SSH Manager Panel TLS certificates (certbot) and republish them
+# Independent of the API process on purpose: certificates must keep renewing
+# even if the panel itself is down.
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=sshpanel-api
+Group=sshpanel-api
+# sshpanel-api is only ever allowed to run this one binary as root (see
+# deploy/sudoers.d/sshpanel); the helper itself re-validates everything and
+# republishes the renewed cert/key to /etc/sshpanel/certs/<domain>, which
+# this service's own account can read.
+ExecStart=/usr/bin/sudo -n /usr/local/bin/sshpanel-helper cert-renew sshpanel-api
